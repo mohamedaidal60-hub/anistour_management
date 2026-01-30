@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  role      String   // "ADMIN" | "AGENT"
+  fullName  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Vehicle {
+  id              String   @id @default(uuid())
+  name            String
+  photoUrl        String?
+  licensePlate    String?
+  purchaseDate    DateTime
+  purchasePrice   Float
+  sellingPrice    Float?
+  isSold          Boolean  @default(false)
+  currentKm       Int
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  transactions    Transaction[]
+  maintenances    Maintenance[]
+  notifications   Notification[]
+}
+
+model Transaction {
+  id          String   @id @default(uuid())
+  type        String   // "INCOME" | "EXPENSE"
+  amount      Float
+  date        DateTime @default(now())
+  description String?
+
+  // For Income
+  clientName  String?
+
+  // For Expense
+  expenseType String? // "SIMPLE" | "MAINTENANCE"
+
+  // Common
+  imageUrl    String? // Photo facture/bon
+  enteredBy   String  // User email
+
+  vehicleId   String?
+  vehicle     Vehicle? @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Maintenance {
+  id             String   @id @default(uuid())
+  type           String   // "VIDANGE", "FILTRE_HUILE", "PLAQUETTES", etc.
+  date           DateTime @default(now())
+  kmAtMaintenance Int
+  cost           Float
+  provider       String?  // Garage name etc
+  imageUrl       String?
+
+  vehicleId      String
+  vehicle        Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  type      String   // Maintenance type
+  targetKm  Int      // Km when notification should trigger
+  isActive  Boolean  @default(true)
+  vehicleId String
+  vehicle   Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
