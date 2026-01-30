@@ -1,8 +1,11 @@
+﻿import { Inter } from 'next/font/google';
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
 import './globals.css';
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({
+  subsets: ['latin'],
+  preload: false,
+});
 
 export const metadata: Metadata = {
   title: 'Anistour Management',
