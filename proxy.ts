@@ -1,10 +1,10 @@
-import { NextResponse } from 'next/server';
+﻿import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { jwtVerify } from 'jose';
 
 const SECRET_KEY = new TextEncoder().encode(process.env.JWT_SECRET || 'super-secret-key-change-me');
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
     const token = req.cookies.get('token')?.value;
     const { pathname } = req.nextUrl;
 
@@ -23,9 +23,6 @@ export async function middleware(req: NextRequest) {
             }
 
             if (pathname.startsWith('/agent') && role !== 'AGENT' && role !== 'ADMIN') {
-                // Admin can access agent routes? Maybe not, strict separation is better, or admin has full access.
-                // Spec says specific roles. Let's keep strict for now, or start with Admin having only Admin access.
-                // Admin sees EVERYTHING, so probably should access admin dashboard which shows everything.
                 return NextResponse.redirect(new URL('/', req.url));
             }
 
