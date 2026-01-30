@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+﻿import { NextResponse, NextRequest } from 'next/server'
 import supabaseAdmin from '@/lib/supabaseAdmin'
 import { cookies } from 'next/headers'
 import { jwtVerify } from 'jose'
@@ -15,7 +15,8 @@ async function getUser() {
   }
 }
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = await params
   const user = await getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
@@ -23,7 +24,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     const { data, error } = await supabaseAdmin
       .from('maintenances')
       .select('*')
-      .eq('vehicleId', params.id)
+      .eq('vehicleId', resolvedParams.id)
       .order('date', { ascending: false })
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
@@ -34,17 +35,18 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   }
 }
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = await params
   const user = await getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   try {
     const data = await req.json()
-    
+
     const { data: maintenance, error } = await supabaseAdmin
       .from('maintenances')
       .insert([{
-        vehicleId: params.id,
+        vehicleId: resolvedParams.id,
         type: data.type,
         date: new Date().toISOString(),
         kmAtMaintenance: parseInt(data.kmAtMaintenance),
